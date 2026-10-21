@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛒 বাজার দর | BazarDor
 
-## Getting Started
+**BazarDor** is a modern and responsive product price-tracking web application that helps users explore products, compare market prices, and stay informed about price changes. The platform provides product categories, price trends, and personalized account features in a user-friendly interface.
 
-First, run the development server:
+## 🚀 Technologies Used
+
+- **Next.js** — React framework for building the web application
+- **TypeScript** — Type-safe development
+- **Tailwind CSS** — Responsive styling and UI design
+- **MongoDB Atlas** — Cloud database
+- **Better Auth** — Authentication and session management
+- **Google OAuth** — Google sign-in
+- **GitHub OAuth** — GitHub sign-in
+- **Programming Hero BazarDor API** — Product and category data
+
+## ✨ Key Features
+
+1. **Product Discovery:** Browse products and explore different categories.
+2. **Price Tracking:** View product prices and identify top price risers and fallers.
+3. **Category Filtering and Sorting:** Find products by category and sort the available results.
+4. **Secure Authentication:** Sign up and sign in using email and password, Google, or GitHub.
+5. **Personalized Profile:** View account information, update your name, and securely log out.
+
+## 🖥️ Getting Started
+
+### Prerequisites
+
+- Node.js and npm
+- A MongoDB Atlas database
+- Required authentication credentials for Better Auth and OAuth providers
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone YOUR_GITHUB_REPOSITORY_URL
+   ```
+
+2. Navigate to the project directory:
+
+   ```bash
+   cd bazar-dor
+   ```
+
+3. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+4. Create a `.env.local` file in the project root and configure the required environment variables:
+
+   ```env
+   MONGODB_URI=your_mongodb_connection_string
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+   GITHUB_CLIENT_ID=your_github_client_id
+   GITHUB_CLIENT_SECRET=your_github_client_secret
+   ```
+
+   Replace the placeholder values with your own credentials. **Never commit `.env.local` or publish your secrets.**
+
+5. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 📦 Build
+
+To create a production build, run:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 👨‍💻 Author
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Developed as part of the Programming Hero web development assignment.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**বাজার দর — Explore products. Track prices. Shop smarter.**
