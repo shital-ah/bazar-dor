@@ -29,11 +29,17 @@ export default function SignupPage() {
       } else {
         setMessage("Account created successfully!");
       }
-    } catch {
-      setMessage("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) {
+  console.error("Signup error:", error);
+
+  setMessage(
+    error instanceof Error
+      ? error.message
+      : "Unknown signup error. Check the browser console."
+  );
+} finally {
+  setLoading(false);
+}
   }
 
   return (

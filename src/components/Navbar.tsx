@@ -3,6 +3,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 type Category = {
   id?: string;
@@ -17,6 +19,10 @@ const API_URL =
 export default function Navbar() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [date, setDate] = useState("");
+  const [signingOut, setSigningOut] = useState(false);
+
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
     setDate(
@@ -47,6 +53,27 @@ export default function Navbar() {
     loadCategories();
   }, []);
 
+  async function handleSignOut() {
+    try {
+      setSigningOut(true);
+
+      const result = await authClient.signOut();
+
+      if (result.error) {
+        alert(result.error.message || "Logout করা যায়নি।");
+        return;
+      }
+
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      alert("Logout করতে সমস্যা হয়েছে। আবার চেষ্টা করো।");
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-green-100 bg-white shadow-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
@@ -59,20 +86,43 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <div className="flex gap-2">
-          <Link
-            href="/signin"
-            className="rounded-lg border border-green-700 px-3 py-2 text-sm font-semibold text-green-700 hover:bg-green-50"
-          >
-            সাইন ইন
-          </Link>
+        <div className="flex items-center gap-2">
+          {!isPending &&
+            (session?.user ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="max-w-32 truncate rounded-lg border border-green-700 px-3 py-2 text-sm font-semibold text-green-700 hover:bg-green-50"
+                >
+                  {session.user.name || "প্রোফাইল"}
+                </Link>
 
-          <Link
-            href="/signup"
-            className="rounded-lg bg-green-700 px-3 py-2 text-sm font-semibold text-white hover:bg-green-800"
-          >
-            সাইন আপ
-          </Link>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                >
+                  {signingOut ? "অপেক্ষা করো..." : "লগ আউট"}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/signin"
+                  className="rounded-lg border border-green-700 px-3 py-2 text-sm font-semibold text-green-700 hover:bg-green-50"
+                >
+                  সাইন ইন
+                </Link>
+
+                <Link
+                  href="/signup"
+                  className="rounded-lg bg-green-700 px-3 py-2 text-sm font-semibold text-white hover:bg-green-800"
+                >
+                  সাইন আপ
+                </Link>
+              </>
+            ))}
         </div>
       </div>
 
@@ -100,3 +150,4 @@ export default function Navbar() {
     </header>
   );
 }
+
