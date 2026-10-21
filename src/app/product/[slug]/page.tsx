@@ -1,12 +1,13 @@
 
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
-
+import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
-
-
-const API_URL = "https://api.api-store.workers.dev/api/bazardor";
+const API_URL =
+  "https://api.api-store.workers.dev/api/bazardor";
 
 type Product = {
   id: number;
@@ -39,19 +40,26 @@ type MarketPrice = {
 type ApiRecord = Record<string, unknown>;
 
 function isRecord(value: unknown): value is ApiRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value)
+  );
 }
 
 function unwrapList(result: unknown): unknown[] {
-  if (Array.isArray(result)) return result as unknown[];
+  if (Array.isArray(result)) return result;
   if (!isRecord(result)) return [];
 
   const data = result.data;
-  if (Array.isArray(data)) return data as unknown[];
-  if (Array.isArray(result.products)) return result.products as unknown[];
+
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(result.products)) return result.products;
+
   if (isRecord(data) && Array.isArray(data.products)) {
-    return data.products as unknown[];
+    return data.products;
   }
+
   return [];
 }
 
@@ -59,12 +67,14 @@ function unwrapProduct(result: unknown): ApiRecord {
   if (!isRecord(result)) return {};
 
   const data = result.data;
+
   if (isRecord(data)) {
     if (isRecord(data.product)) return data.product;
     return data;
   }
 
   if (isRecord(result.product)) return result.product;
+
   return result;
 }
 
@@ -74,7 +84,9 @@ function bnNumber(value: number) {
   }).format(value);
 }
 
-async function getProduct(slug: string): Promise<{
+async function getProduct(
+  slug: string
+): Promise<{
   product: Product;
   markets: MarketPrice[];
 } | null> {
@@ -85,7 +97,7 @@ async function getProduct(slug: string): Promise<{
 
     if (!listResponse.ok) return null;
 
-    const listResult = await listResponse.json();
+    const listResult: unknown = await listResponse.json();
     const products = unwrapList(listResult) as Product[];
 
     const matchedProduct = products.find(
@@ -103,18 +115,22 @@ async function getProduct(slug: string): Promise<{
       return { product: matchedProduct, markets: [] };
     }
 
-    const detailResult = await detailResponse.json();
+    const detailResult: unknown = await detailResponse.json();
     const detail = unwrapProduct(detailResult);
 
     const product: Product = {
       ...matchedProduct,
-      ...(detail && typeof detail === "object" ? detail : {}),
-    };
+      ...detail,
+    } as Product;
 
-    const detailResultRecord = isRecord(detailResult) ? detailResult : {};
+    const detailResultRecord = isRecord(detailResult)
+      ? detailResult
+      : {};
+
     const detailResultData = isRecord(detailResultRecord.data)
       ? detailResultRecord.data
       : {};
+
     const possibleMarkets =
       detail.marketPrices ??
       detail.market_prices ??
@@ -125,9 +141,12 @@ async function getProduct(slug: string): Promise<{
 
     return {
       product,
-      markets: Array.isArray(possibleMarkets) ? possibleMarkets : [],
+      markets: Array.isArray(possibleMarkets)
+        ? (possibleMarkets as MarketPrice[])
+        : [],
     };
-  } catch {
+  } catch (error) {
+    console.error("Product loading failed:", error);
     return null;
   }
 }
@@ -137,31 +156,35 @@ async function ProductDetailsContent({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  // Protect this page using the server-side Better Auth session.
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    redirect("/signin");
+  }
+
   const { slug } = await params;
   const result = await getProduct(slug);
 
   if (!result) notFound();
 
   const { product, markets } = result;
+
   const priceValues = markets
     .map((market) =>
       Number(
-        market.price ??
-          market.today ??
-          market.priceToday
+        market.price ?? market.today ?? market.priceToday
       )
     )
     .filter((price) => Number.isFinite(price) && price > 0);
 
   const minimum =
-    priceValues.length > 0
-      ? Math.min(...priceValues)
-      : null;
+    priceValues.length > 0 ? Math.min(...priceValues) : null;
 
   const maximum =
-    priceValues.length > 0
-      ? Math.max(...priceValues)
-      : null;
+    priceValues.length > 0 ? Math.max(...priceValues) : null;
 
   const average =
     priceValues.length > 0
@@ -218,8 +241,11 @@ async function ProductDetailsContent({
                       : "bg-gray-100 text-gray-600"
                 }`}
               >
-                {isUp ? "▲ দাম বেড়েছে" : isDown ? "▼ দাম কমেছে" : "— দাম অপরিবর্তিত"}
-                {" "}
+                {isUp
+                  ? "▲ দাম বেড়েছে"
+                  : isDown
+                    ? "▼ দাম কমেছে"
+                    : "— দাম অপরিবর্তিত"}{" "}
                 {bnNumber(Number(product.change?.pct) || 0)}%
               </span>
             </div>
@@ -265,8 +291,8 @@ async function ProductDetailsContent({
 
           {priceValues.length === 0 && (
             <p className="mt-3 text-sm text-gray-500">
-              বিভিন্ন বাজারের দাম পাওয়া গেলে এখানে সর্বনিম্ন, সর্বোচ্চ
-              ও গড় দাম দেখানো হবে।
+              বিভিন্ন বাজারের দাম পাওয়া গেলে এখানে সর্বনিম্ন,
+              সর্বোচ্চ ও গড় দাম দেখানো হবে।
             </p>
           )}
         </section>
@@ -301,6 +327,7 @@ async function ProductDetailsContent({
                       <span className="font-medium text-gray-800">
                         📍 {String(marketName)}
                       </span>
+
                       <span className="font-bold text-green-700">
                         {Number.isFinite(price) && price > 0
                           ? `৳ ${bnNumber(price)}`
@@ -330,7 +357,6 @@ async function ProductDetailsContent({
     </main>
   );
 }
-
 
 export default function ProductDetailsPage({
   params,
