@@ -6,6 +6,8 @@ import Navbar from "@/components/Navbar";
 
 import PriceTicker from "@/components/PriceTicker";
 
+import Footer from "@/components/Footer";
+
 const hindSiliguri = Hind_Siliguri({
   subsets: ["bengali", "latin"],
   weight: ["300", "400", "500", "600", "700"],
@@ -41,6 +43,7 @@ export default function RootLayout({
         <Navbar />
         <PriceTicker />
         {children}
+        <Footer />
       </body>
     </html>
   );
